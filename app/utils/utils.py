@@ -4,20 +4,20 @@ import matplotlib.pyplot as plt
 def get_color():
     return((np.random.random(),np.random.random(),np.random.random()))
 
-def visualize_vector(title="", new_basis=np.array([[1,0],[0,1]]), show=True,colors=['red','green','blue'], **kwargs):
+def visualize_vector(title="",new_basis=np.array([[1,0],[0,1]]), show=True,colors=['red','green','blue'],grid_length = 5, **kwargs):
     # Create a new figure
     fig, ax = plt.subplots(figsize=(6, 6))
 
     # Original basis
     original_basis = np.array([[1, 0], [0, 1]])
-    axes = np.array([np.multiply(new_basis, -5), np.multiply(new_basis, 5)])
+    axes = np.array([np.multiply(new_basis, -1*grid_length), np.multiply(new_basis, grid_length)])
     
     # Plot axes
     ax.plot(axes[:, 0][:, 0], axes[:, 0][:, 1], c='k', linewidth=1.5)
     ax.plot(axes[:, 1][:, 0], axes[:, 1][:, 1], c='k', linewidth=1.5)
     
     # Plot the grid
-    for i in range(-4, 5):
+    for i in range(-1*(grid_length-1), grid_length):
         ax.plot(axes[:, 0][:, 0], axes[:, 0][:, 1] + i, c='grey', linewidth=0.5)
         ax.plot(axes[:, 1][:, 0] + i, axes[:, 1][:, 1], c='grey', linewidth=0.5)
     
