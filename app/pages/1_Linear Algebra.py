@@ -71,7 +71,7 @@ st.code(
 
 st.markdown('''### An arrow''')
 
-vector = [st.number_input("X1",value=1.0),st.number_input("Y1",2.5)]
+vector = [st.number_input("X1",value=1.0,min_value=0.0,max_value=5.0,step=0.5,key='x1'),st.number_input("X1",value=1.0,min_value=0.0,max_value=5.0,step=0.5,key='y1')]
 st.write(f"[{vector[0]} {vector[1]}]")
 # Example usage
 fig = utils.visualize_vector(title="Vector Visualization", show=False,
@@ -99,8 +99,9 @@ where $||v||$ is the magnitude of the vector. Normalization is often used in var
 """
 )
 
-v = np.array([4,1])
-norm = utils.normalize_vector(v)
-fig = utils.visualize_vector(v=v,norm=norm,title="Arrow representation of vector and normalized form ")
+vector = np.array([st.number_input("X1",value=1.0,min_value=0.0,max_value=5.0,step=0.5,key='norm_x1'),st.number_input("X1",value=1.0,min_value=0.0,max_value=5.0,step=0.5,key='norm_y1')])
+st.write(f"[{vector[0]} {vector[1]}]")
+norm = utils.normalize_vector(vector)
+fig = utils.visualize_vector(v=vector,norm=norm,title="Arrow representation of vector and normalized form ")
 st.pyplot(fig=fig)
 
