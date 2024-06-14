@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def draw_bullseye(num_circles=7, outer_radius=1.0, hits=None, precision=None, recall=None, threshold=0.1):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(4,2))
+    fig.set_figheight(3)
     
     for i in range(num_circles):
         radius = outer_radius * (num_circles - i) / num_circles
@@ -27,7 +28,7 @@ def draw_bullseye(num_circles=7, outer_radius=1.0, hits=None, precision=None, re
     
     # Annotation for precision and recall
     if precision is not None and recall is not None:
-        ax.text(-outer_radius, -outer_radius - 0.1, f'Precision: {precision:.2f}, Recall: {recall:.2f}', fontsize=12, ha='left')
+        ax.text(-outer_radius, -outer_radius - 0.15, f'Precision: {precision:.2f}, Recall: {recall:.2f}', fontsize=12, ha='left')
     
     
     # Display legend
