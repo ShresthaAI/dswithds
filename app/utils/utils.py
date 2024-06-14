@@ -8,7 +8,7 @@ def load_page(page_name):
         st.title("Welcome to the Multi-Page Streamlit App")
         st.write("Select a page from the sidebar to get started.")
     elif page_name == "metrics/1_Precision_Recall":
-        from app.pages.metrics import Precision_Recall as page
+        from pages.metrics import Precision_Recall as page
         page.app()
         return True
     elif page_name == "linalg/Vectors":
