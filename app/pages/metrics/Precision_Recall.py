@@ -3,19 +3,19 @@ import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
-def draw_bullseye(num_circles=7, outer_radius=1.0, hits=None, precision=None, threshold=0.1):
+def draw_bullseye(num_circles=7, outer_radius=1.0, bullseye_config=None, hits=None, precision=None, threshold=0.1):
     fig = go.Figure()
     
     # Plot each circle of the bullseye
-    shapes =[]
+    shapes = []
     for i in range(num_circles):
         radius = outer_radius * (num_circles - i) / num_circles
-        if i == num_circles - 1:
-            color = 'yellow'  # Innermost circle (target area)
-            label = 'Target'
-        else:
-            color = 'red' if i % 2 == 0 else 'white'
-            label = None
+        # if i == num_circles - 1:
+        #     color = 'yellow'  # Innermost circle (target area)
+        #     label = 'Target'
+        # else:
+        color = 'red' if i % 2 == 0 else 'white'
+        label = None
         
         # Define the shape of the circle
         circle = dict(
@@ -30,13 +30,28 @@ def draw_bullseye(num_circles=7, outer_radius=1.0, hits=None, precision=None, th
             layer="below",
         )
         shapes.append(circle)
-        # Add circle shape to the layout
+    
+    # Add each bullseye target (small yellow circle)
+    for center, target_radius in bullseye_config:
+        circle = dict(
+            type="circle",
+            xref="x",
+            yref="y",
+            fillcolor='yellow',
+            line=dict(color='black', width=2),
+            x0=center[0] - target_radius, y0=center[1] - target_radius,
+            x1=center[0] + target_radius, y1=center[1] + target_radius,
+            opacity=0.7,
+            layer="below",
+        )
+        shapes.append(circle)
+    
     fig.update_layout(shapes=shapes)
         
     # Plot the hits
     if hits:
         hit_x, hit_y = zip(*hits)
-        colors = ['blue' if np.linalg.norm(np.array(hit) - np.array([0, 0])) < threshold else 'black' for hit in hits]
+        colors = ['blue' if np.linalg.norm(np.array(hit) - center) < threshold else 'black' for hit in hits]
         fig.add_trace(go.Scatter(
             x=hit_x, y=hit_y,
             mode='markers',
@@ -68,8 +83,7 @@ def draw_bullseye(num_circles=7, outer_radius=1.0, hits=None, precision=None, th
     return fig
 
 @st.cache_data
-def compute_precision_recall(predicted_hits, threshold=0.1):
-    center = np.array([0, 0])
+def compute_precision_recall(predicted_hits,center, threshold=0.1):
     distances = [np.linalg.norm(np.array(hit) - center) for hit in predicted_hits]
     true_positives = sum([dist <= threshold for dist in distances])  # Adjusted to include boundary
     false_positives = sum([dist > threshold for dist in distances])  # Adjusted to include boundary
@@ -81,8 +95,8 @@ def compute_precision_recall(predicted_hits, threshold=0.1):
 @st.cache_data
 def generate_hits(num_hits, mean_x, mean_y, std_dev_x, std_dev_y):
     if num_hits > 0:
-        hits_x = np.round(np.random.normal(mean_x, std_dev_x, num_hits),2)
-        hits_y = np.round(np.random.normal(mean_y, std_dev_y, num_hits),2)
+        hits_x = np.round(np.random.normal(mean_x, std_dev_x, num_hits), 2)
+        hits_y = np.round(np.random.normal(mean_y, std_dev_y, num_hits), 2)
         hits = list(zip(hits_x, hits_y))
     else:
         hits = []
@@ -97,9 +111,7 @@ def bullseye_config(bullseye_num, outer_radius):
     
     return num_hits, mean_x, mean_y, std_dev_x, std_dev_y
 
-
-def generate_truth_table(predicted_hits, outer_radius, threshold=0.1):
-    center = np.array([0, 0])
+def generate_truth_table(predicted_hits,center,threshold=0.1):
     
     distances = [np.linalg.norm(np.array(hit) - center) for hit in predicted_hits]
     is_in_target = [dist <= threshold for dist in distances]  # Adjusted to include boundary
@@ -110,7 +122,6 @@ def generate_truth_table(predicted_hits, outer_radius, threshold=0.1):
     }
     return pd.DataFrame(truth_table_data)
 
-
 def app():
     st.title("Bullseye Generator")
     
@@ -118,6 +129,13 @@ def app():
     num_circles = 7
     outer_radius = 1.0
     num_bullseyes = 3
+
+    # Define bullseye configurations: (center, target_radius)
+    bullseye_configs = [
+        (np.array([0, 0]), 0.11 * outer_radius),
+        (np.array([0.5, -0.5]), 0.20 * outer_radius),
+        (np.array([-0.5, 0.5]), 0.14 * outer_radius)
+    ]
 
     col1, col2, col3 = st.columns(3)
     columns = [col1, col2, col3]
@@ -133,20 +151,19 @@ def app():
 
             # Compute precision and recall
             
-            precision, recall = compute_precision_recall(hits,threshold=outer_radius / num_circles)
+            precision, recall = compute_precision_recall(hits,bullseye_configs[i][0], threshold=bullseye_configs[i][1])
             bullseye_data.append((hits, precision, recall))
 
             st.subheader(f"Bullseye {i+1}")
-            fig = draw_bullseye(num_circles, outer_radius, hits, precision, threshold=outer_radius / num_circles)
+            fig = draw_bullseye(num_circles, outer_radius, bullseye_configs[i:i+1], hits, precision, threshold=outer_radius / num_circles)
             st.plotly_chart(fig)
 
             st.write(f"Precision: {precision:.2f}")
             st.write(f"Recall: {recall:.2f}")
             
-            
             # Generate and display truth table
             if hits:
-                truth_table = generate_truth_table(hits, outer_radius, threshold=outer_radius / num_circles)
+                truth_table = generate_truth_table(hits, bullseye_configs[i][0], threshold=bullseye_configs[i][1])
                 st.subheader(f"Truth Table for Bullseye {i+1}")
                 st.dataframe(truth_table)
             else:
