@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.utils import load_page
-st.set_page_config(page_title="DS with DS", layout="wide",hide_navbar=True)
+st.set_page_config(page_title="DS with DS", layout="wide",initial_sidebar_state="collapsed")
 
 
 

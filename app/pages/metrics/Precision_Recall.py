@@ -68,18 +68,15 @@ def draw_bullseye(num_circles=7, outer_radius=1.0, hits=None, precision=None, th
     return fig
 
 @st.cache_data
-def compute_precision_recall_accuracy(predicted_hits, threshold=0.1):
+def compute_precision_recall(predicted_hits, threshold=0.1):
     center = np.array([0, 0])
     distances = [np.linalg.norm(np.array(hit) - center) for hit in predicted_hits]
-    
-    true_positives = sum([dist <= threshold for dist in distances])  # Correct hits within the threshold
-    false_positives = sum([dist > threshold for dist in distances])  # Incorrect hits outside the threshold
-    
+    true_positives = sum([dist <= threshold for dist in distances])  # Adjusted to include boundary
+    false_positives = sum([dist > threshold for dist in distances])  # Adjusted to include boundary
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
     recall = true_positives / len(predicted_hits) if len(predicted_hits) > 0 else 0
-    accuracy = true_positives / len(predicted_hits) if len(predicted_hits) > 0 else 0
     
-    return precision, recall, accuracy
+    return precision, recall
 
 @st.cache_data
 def generate_hits(num_hits, mean_x, mean_y, std_dev_x, std_dev_y):
