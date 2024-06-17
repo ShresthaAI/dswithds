@@ -10,12 +10,7 @@ def draw_bullseye(num_circles=7, outer_radius=1.0, bullseye_config=None, hits=No
     shapes = []
     for i in range(num_circles):
         radius = outer_radius * (num_circles - i) / num_circles
-        # if i == num_circles - 1:
-        #     color = 'yellow'  # Innermost circle (target area)
-        #     label = 'Target'
-        # else:
         color = 'red' if i % 2 == 0 else 'white'
-        label = None
         
         # Define the shape of the circle
         circle = dict(
@@ -32,6 +27,7 @@ def draw_bullseye(num_circles=7, outer_radius=1.0, bullseye_config=None, hits=No
         shapes.append(circle)
     
     # Add each bullseye target (small yellow circle)
+    target_traces = []
     for center, target_radius in bullseye_config:
         circle = dict(
             type="circle",
@@ -45,17 +41,29 @@ def draw_bullseye(num_circles=7, outer_radius=1.0, bullseye_config=None, hits=No
             layer="below",
         )
         shapes.append(circle)
-    
-    fig.update_layout(shapes=shapes)
         
+        # Add trace for legend
+        target_trace = go.Scatter(
+            x=[None],
+            y=[None],
+            mode='markers',
+            marker=dict(color='yellow', size=10, line=dict(color='black', width=2)),
+            name='Target Area',
+        )
+        target_traces.append(target_trace)
+    
+    # Add the target traces to the figure
+    fig.update_layout(shapes=shapes)
+    fig.add_traces(target_traces)
+    
     # Plot the hits
     if hits:
         hit_x, hit_y = zip(*hits)
-        colors = ['blue' if np.linalg.norm(np.array(hit) - center) < threshold else 'black' for hit in hits]
+        colors = ['blue' if np.linalg.norm(np.array(hit) - center) <= threshold else 'black' for hit in hits]
         fig.add_trace(go.Scatter(
             x=hit_x, y=hit_y,
             mode='markers',
-            marker=dict(color=colors, size=10, line=dict(color='black', width=1)),
+            marker=dict(color=colors, size=10, line=dict(color=colors, width=1)),
             name='Hits',
             text=[f"x: {x:.2f}, y: {y:.2f}" for x, y in zip(hit_x, hit_y)],
             hoverinfo='text',
